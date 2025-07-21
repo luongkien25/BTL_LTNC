@@ -4,6 +4,8 @@
 #include <array>
 using namespace std;
 // dùng đồ thị cây lưu trữ các từ
+// phức tạp hơn tìm kiếm nhị phân nhưng nhanh hơn và phù hợp cho AI.
+
 struct Node {
     bool end = false;
     array<Node*,26> nodeCon = {};
@@ -59,11 +61,7 @@ public:
         }
         return current->end;
     }
-};
-
-Graph* Graph::instance = nullptr;
-
-void loadDictionary (const string& fileName, Graph& gDictionary) {
+    void loadDictionary (const string& fileName) {
     ifstream file(fileName);
     if (!file.is_open()) {
         cerr << "Chưa mở được file từ điển" << endl;
@@ -71,13 +69,18 @@ void loadDictionary (const string& fileName, Graph& gDictionary) {
     } 
     string word;
     while(getline(file, word)) {
-        gDictionary.insertWord(word);
+        insertWord(word);
     }
 }
+};
+
+Graph* Graph::instance = nullptr;
+
+
 
 int main() { // test thử
     Graph* gDictionary = Graph::getInstance();
-    loadDictionary("EnglishDictionary.txt", *gDictionary);
+    gDictionary->loadDictionary("EnglishDictionary.txt");
     string word;
     cin >> word;
     if(!gDictionary->isWordInDictionary(word)) {
@@ -85,6 +88,7 @@ int main() { // test thử
     } else {
         cout << word << " is a word";
     }
+    delete gDictionary;
     return 0;
 }
 
