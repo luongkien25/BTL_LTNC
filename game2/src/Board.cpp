@@ -1,10 +1,13 @@
 #include <iostream>
+#include <fstream>
 #include <SDL2/SDL.h>
 #include <Board.hpp>
 #include "tinyxml2.h"
 #include <SDL_image.h>
 #include <string>
+#include <filesystem>
 #include <sstream>
+#include <Game.hpp>
 using namespace std;
 using namespace tinyxml2;
 
@@ -12,58 +15,26 @@ Board::Board(SDL_Renderer* renderer) : renderer(renderer) {
     // Optional: initialization logic here
 }
 
-bool Board::load(const string& tmxFile, const string& tilesetImage) {
-    XMLDocument doc;
-    if (doc.LoadFile(tmxFile.c_str()) != XML_SUCCESS) {
-        std::cerr << "Failed to load TMX file\n";
-        return false;
+void Board::load(const string& file, SDL_Renderer* renderer) {
+    SDL_Surface* tempSurface = IMG_Load(file.c_str());
+    if (!tempSurface) {
+        SDL_Log("Failed to load image %s: %s", file.c_str(), IMG_GetError());
+        return;
     }
 
-    XMLElement* mapElement = doc.FirstChildElement("map");
-    mapWidth = mapElement->IntAttribute("width");
-    mapHeight = mapElement->IntAttribute("height");
-    tileWidth = mapElement->IntAttribute("tilewidth");
-    tileHeight = mapElement->IntAttribute("tileheight");
+    board_texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+    SDL_FreeSurface(tempSurface);
 
-    XMLElement* layer = mapElement->FirstChildElement("layer");
-    XMLElement* data = layer->FirstChildElement("data");
-    const char* csv = data->GetText();
-
-    stringstream ss(csv);
-    string token;
-    while (getline(ss, token, ',')) {
-        tileIDs.push_back(stoi(token));
+    if (!board_texture) {
+        SDL_Log("Failed to create texture from %s: %s", file.c_str(), SDL_GetError());
     }
 
-    // Load tileset texture
-    SDL_Surface* surface = IMG_Load(tilesetImage.c_str());
-    if (!surface) return false;
-    tileset = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
 
-    return true;
 }
 
-void Board::render() {
-    if (!tileset) return;
-    int tilesPerRow = 256 / tileWidth; // Assuming 256px tileset width
-
-    for (int row = 0; row < mapHeight; ++row) {
-        for (int col = 0; col < mapWidth; ++col) {
-            int tileID = tileIDs[row * mapWidth + col];
-            if (tileID == 0) continue;
-
-            SDL_Rect src = {
-                ((tileID - 1) % tilesPerRow) * tileWidth,
-                ((tileID - 1) / tilesPerRow) * tileHeight,
-                tileWidth, tileHeight
-            };
-            SDL_Rect dest = {
-                col * tileWidth,
-                row * tileHeight,
-                tileWidth, tileHeight
-            };
-            SDL_RenderCopy(renderer, tileset, &src, &dest);
-        }
-    }
+void Board::render(int& screenW,int& screenH) {
+            board_rect = {screenW/2,screenH/2-board_size_y,board_size_x,board_size_y};
+            SDL_RenderCopy(renderer, board_texture,nullptr, &board_rect);
 }
+
+

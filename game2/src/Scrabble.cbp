@@ -27,8 +27,11 @@
 					<Add library="SDL2_image" />
 					<Add library="SDL2main&#x0A;&#x0A;" />
 					<Add library="C:/Users/User/Documents/game2/external/tinyxml2-master/tinyxml2-master/tinyxml2.cpp" />
+					<Add library="SDL2_ttf" />
+					<Add library="libSDL2_ttf.a" />
 					<Add directory="C:/Users/User/Documents/game2/src/" />
 					<Add directory="C:/Users/User/Documents/game2/external/tinyxml2-master/tinyxml2-master" />
+					<Add directory="C:/Users/User/Documents/game2/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -62,9 +65,13 @@
 		<ExtraCommands>
 			<Add after="XCOPY $(#sdl2)\bin\*.dll $(TARGET_OUTPUT_DIR) /D /Y" />
 		</ExtraCommands>
+		<Unit filename="../Assets/ARIAL.TTF" />
+		<Unit filename="../Assets/frame.png" />
 		<Unit filename="../external/tinyxml2-master/tinyxml2-master/tinyxml2.cpp" />
 		<Unit filename="../include/Board.hpp" />
 		<Unit filename="../include/Game.hpp" />
+		<Unit filename="../include/Player.hpp" />
+		<Unit filename="ARIAL.TTF" />
 		<Unit filename="Board.cpp" />
 		<Unit filename="Constants.cpp" />
 		<Unit filename="Game.cpp" />

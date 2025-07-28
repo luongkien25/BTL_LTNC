@@ -4,17 +4,24 @@
 
 1752901390 source:c:\users\user\documents\game2\src\constants.cpp
 
-1752901384 source:c:\users\user\documents\game2\src\player.cpp
+1753680535 source:c:\users\user\documents\game2\src\player.cpp
+	"Player.hpp"
+	<SDL_image.h>
+	"Game.hpp"
+	<SDL2/SDL_ttf.h>
 
-1753001824 source:c:\users\user\documents\game2\src\game.cpp
+1753680370 source:c:\users\user\documents\game2\src\game.cpp
 	"Game.hpp"
 	"Board.hpp"
+	"Player.hpp"
 	<iostream>
 	<tinyxml2.h>
+	<SDL2/SDL_ttf.h>
 
-1752997180 c:\users\user\documents\game2\include\game.hpp
+1753347735 c:\users\user\documents\game2\include\game.hpp
 	<SDL2/SDL.h>
 	<Board.hpp>
+	"Player.hpp"
 
 1750591975 c:\users\user\onedrive\desktop\sdl2-devel-2.30.11-mingw\sdl2-2.30.11\x86_64-w64-mingw32\include\sdl2\sdl.h
 	"SDL_main.h"
@@ -457,24 +464,28 @@
 	"begin_code.h"
 	"close_code.h"
 
-1752901492 source:c:\users\user\documents\game2\src\main.cpp
+1753177132 source:c:\users\user\documents\game2\src\main.cpp
 	<SDL2/SDL.h>
 	"Game.hpp"
 
-1752996980 source:c:\users\user\documents\game2\src\board.cpp
+1753528831 source:c:\users\user\documents\game2\src\board.cpp
 	<iostream>
+	<fstream>
 	<SDL2/SDL.h>
 	<Board.hpp>
 	"tinyxml2.h"
 	<SDL_image.h>
 	<string>
+	<filesystem>
 	<sstream>
+	<Game.hpp>
 
-1752996840 c:\users\user\documents\game2\include\board.hpp
+1753529488 c:\users\user\documents\game2\include\board.hpp
 	<iostream>
 	<SDL.h>
 	<string>
 	<vector>
+	"tinyxml2.h"
 
 1750303297 c:\users\user\documents\game2\include\sdl2\sdl.h
 	"SDL_main.h"
@@ -949,4 +960,16 @@
 	<stdarg.h>
 	<cstddef>
 	<cstdarg>
+
+1753680149 c:\users\user\documents\game2\include\player.hpp
+	<iostream>
+	<SDL2/SDL.h>
+	<string>
+	<vector>
+	<SDL2/SDL_ttf.h>
+
+1736156157 c:\users\user\documents\game2\include\sdl2\sdl_ttf.h
+	"SDL.h"
+	"begin_code.h"
+	"close_code.h"
 
