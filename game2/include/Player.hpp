@@ -6,7 +6,7 @@
 #include<SDL2/SDL_ttf.h>
 using namespace std;
 struct Tile{
-    int tile_size = 48;
+    int tile_size = 40;
     SDL_Rect rect;
     int score;
     char letter;
@@ -22,6 +22,7 @@ class Player{
      void render();
      void renderText(int x,int y,TTF_Font* font,string text);
      vector<Tile> letters;
+     vector<Tile> player2_letters;
      SDL_Rect rack_rect;
      SDL_Rect dst_rect;
  private:
@@ -29,6 +30,6 @@ class Player{
      SDL_Texture* rack;
 
      int letters_size = 7;
-     int tile_size = 48;
+     int tile_size = 40;
 
 };

@@ -58,10 +58,33 @@ void Game::handleEvents() {
                      break;
                  }
              }
+
+             bool player2_check_tile = false;
+             for(auto& tile: player->player2_letters){
+                 if(SDL_PointInRect(&mousePoint, &tile.rect)){
+                     tile.selected = true;
+                     player2_check_tile = true;
+                     break;
+                 }
+             }
+
               if (!check_tile && SDL_PointInRect(&mousePoint, &board->board_rect)) {
-                 mousePoint.x = ((mousePoint.x-board->board_rect.x)/48)*48+(board->board_rect.x);
-                 mousePoint.y = ((mousePoint.y-board->board_rect.y)/48)*48+(board->board_rect.y);
+                 mousePoint.x = ((mousePoint.x-board->board_rect.x)/40)*40+(board->board_rect.x);
+                 mousePoint.y = ((mousePoint.y-board->board_rect.y)/40)*40+(board->board_rect.y);
                 for (auto& tile : player->letters) {
+                    if (tile.selected) {
+                        tile.rect.x = mousePoint.x;
+                        tile.rect.y = mousePoint.y;
+                        tile.selected = false;
+                        break;
+                    }
+                }
+            }
+
+             if (!player2_check_tile && SDL_PointInRect(&mousePoint, &board->board_rect)) {
+                 mousePoint.x = ((mousePoint.x-board->board_rect.x)/40)*40+(board->board_rect.x);
+                 mousePoint.y = ((mousePoint.y-board->board_rect.y)/40)*40+(board->board_rect.y);
+                for (auto& tile : player->player2_letters) {
                     if (tile.selected) {
                         tile.rect.x = mousePoint.x;
                         tile.rect.y = mousePoint.y;

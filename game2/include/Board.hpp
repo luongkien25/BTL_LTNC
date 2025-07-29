@@ -20,7 +20,7 @@ private:
     int tileHeight = 0;
     int mapWidth = 0;
     int mapHeight = 0;
-    int board_size_x = 530;
+    int board_size_x = 520;
     int board_size_y = 480;
     vector<int> tileIDs;
 };
