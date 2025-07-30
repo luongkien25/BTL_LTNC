@@ -9,6 +9,7 @@ using namespace tinyxml2;
 bool Game::init(const char* title, int width, int height) {
     TTF_Init();
     board = new Board(renderer);
+    board->load_bonus_from_txt("standard-board.txt");
 
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) return false;
@@ -103,7 +104,6 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-    board->load_bonus_from_txt("standard-board.txt");
     
 }
 
