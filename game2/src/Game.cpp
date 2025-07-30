@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "Tile.hpp"
 #include "Board.hpp"
 #include "Player.hpp"
 #include <iostream>
@@ -75,6 +76,10 @@ void Game::handleEvents() {
                     if (tile.selected) {
                         tile.rect.x = mousePoint.x;
                         tile.rect.y = mousePoint.y;
+                        int x_index = (mousePoint.x - board->board_rect.x) / tile_size;
+                        int y_index = (mousePoint.y - board->board_rect.y) / tile_size;
+
+                        board->update_board_with_tile(&tile, x_index, y_index);
                         tile.selected = false;
                         break;
                     }
@@ -98,7 +103,8 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-
+    board->load_bonus_from_txt("standard-board.txt");
+    
 }
 
 void Game::render() {

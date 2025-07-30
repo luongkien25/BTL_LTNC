@@ -9,6 +9,8 @@ public:
     void run();
     void cleanup();
     int screenW, screenH;
+    std::vector<std::pair<int, int>> tile_positions;
+    BonusType board_bonus[15][15];
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
