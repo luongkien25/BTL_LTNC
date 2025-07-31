@@ -3,6 +3,8 @@
 #include <SDL_image.h>
 #include "Game.hpp"
 #include<SDL2/SDL_ttf.h>
+#include <set>
+#include<cmath>
 using namespace std;
 
 Player::Player(SDL_Renderer* renderer) : renderer(renderer) {
@@ -147,182 +149,148 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
     Graph* graph = Graph::getInstance();
     int total_score = 0;
     bool allWordsValid = true;
-    vector<string> validWords;  // Lưu trữ các từ hợp lệ
+    std::set<std::string> validWords; 
 
-    // wordMultiplier chỉ cần khai báo một lần
-    int wordMultiplier = 1;  // Nhân với bonus từ Double Word và Triple Word
-
-    // Kiểm tra các ô liền kề với các ô đã có trên bảng
     for (auto& pos : tile_positions) {
         int x = pos.first;
         int y = pos.second;
-
-        if (x > 0 && Board[x - 1][y] != nullptr) hasAdjacentTile = true;  
-        if (x < 14 && Board[x + 1][y] != nullptr) hasAdjacentTile = true;  
-        if (y > 0 && Board[x][y - 1] != nullptr) hasAdjacentTile = true; 
-        if (y < 14 && Board[x][y + 1] != nullptr) hasAdjacentTile = true;  
+        if ((x > 0 && Board[x - 1][y] != nullptr) ||
+            (x < 14 && Board[x + 1][y] != nullptr) ||
+            (y > 0 && Board[x][y - 1] != nullptr) ||
+            (y < 14 && Board[x][y + 1] != nullptr)) {
+            hasAdjacentTile = true;
+        }
     }
+    if (!hasAdjacentTile) return {false, 0};
 
-    if (!hasAdjacentTile) {
-        return std::make_pair(false, 0);  // Nếu không có tile liền kề, không thể đặt từ
-    }
+    bool vertical = isVertical(tile_positions);
 
-    string word;
-    // Kiểm tra từ theo chiều dọc
-    if (isVertical(tile_positions)) {
-        int x = tile_positions[0].first;
+    std::string mainWord;
+    int mainScore = 0;
+    int doubleWordCount = 0, tripleWordCount = 0;
+    std::set<std::pair<int, int>> newTiles(tile_positions.begin(), tile_positions.end());
+
+    if (vertical) {
         int y = tile_positions[0].second;
-        word = Board[x][y]->letter;
-        int score = calculateTileScore(x, y, Board[x][y]);
-        int up = x - 1;
-        int down = x + 1;
-
-        while (up >= 0 && Board[up][y] != nullptr) {
-            word = Board[up][y]->letter + word;
-            score += calculateTileScore(up, y, Board[up][y]);
-            up--;
-        }
-
-        while (down < 15 && Board[down][y] != nullptr) {
-            word += Board[down][y]->letter;
-            score += calculateTileScore(down, y, Board[down][y]);
-            down++;
-        }
-
-        if (!word.empty() && !graph->isWordInDictionary(word)) {
-            allWordsValid = false;
-        } else {
-            validWords.push_back(word);  // Lưu từ hợp lệ
-            total_score += score;
-        }
-
-        // Kiểm tra từ ngang
+        int minX = 15, maxX = -1;
         for (auto& pos : tile_positions) {
-            int x = pos.first;
-            int y = pos.second;
-            word = Board[x][y]->letter;
-            score = calculateTileScore(x, y, Board[x][y]);
-            int left = y - 1;
-            int right = y + 1;
-
-            while (left >= 0 && Board[x][left] != nullptr) {
-                word = Board[x][left]->letter + word;
-                score += calculateTileScore(x, left, Board[x][left]);
-                left--;
-            }
-
-            while (right < 15 && Board[x][right] != nullptr) {
-                word += Board[x][right]->letter;
-                score += calculateTileScore(x, right, Board[x][right]);
-                right++;
-            }
-
-            if (!word.empty() && !graph->isWordInDictionary(word)) {
-                allWordsValid = false;
-                break;
-            } else {
-                validWords.push_back(word);  // Lưu từ hợp lệ
-                total_score += score;
-            }
+            minX = std::min(minX, pos.first);
+            maxX = std::max(maxX, pos.first);
         }
-    } else {  // Kiểm tra từ theo chiều ngang
+        int x = minX;
+        while (x > 0 && Board[x - 1][y] != nullptr) x--;
+        for (; x < 15 && Board[x][y] != nullptr; ++x) {
+            mainWord += Board[x][y]->letter;
+            int tileScore = getTileScore(Board[x][y]->letter);
+            if (newTiles.count({x, y})) {
+                switch (board_bonus[x][y]) {
+                    case DOUBLE_LETTER: tileScore *= 2; break;
+                    case TRIPLE_LETTER: tileScore *= 3; break;
+                    case DOUBLE_WORD: doubleWordCount++; break;
+                    case TRIPLE_WORD: tripleWordCount++; break;
+                    default: break;
+                }
+            }
+            mainScore += tileScore;
+        }
+    } else {
         int x = tile_positions[0].first;
-        int y = tile_positions[0].second;
-        word = "";
-        int score = calculateTileScore(x, y, Board[x][y]);
-        int left = y - 1;
-        int right = y;
-
-        while (left >= 0 && Board[x][left] != nullptr) {
-            word = Board[x][left]->letter + word;
-            score += calculateTileScore(x, left, Board[x][left]);
-            left--;
+        int minY = 15, maxY = -1;
+        for (auto& pos : tile_positions) {
+            minY = std::min(minY, pos.second);
+            maxY = std::max(maxY, pos.second);
         }
-
-        while (right < 15 && Board[x][right] != nullptr) {
-            word += Board[x][right]->letter;
-            score += calculateTileScore(x, right, Board[x][right]);
-            right++;
+        int y = minY;
+        while (y > 0 && Board[x][y - 1] != nullptr) y--;
+        for (; y < 15 && Board[x][y] != nullptr; ++y) {
+            mainWord += Board[x][y]->letter;
+            int tileScore = getTileScore(Board[x][y]->letter);
+            if (newTiles.count({x, y})) {
+                switch (board_bonus[x][y]) {
+                    case DOUBLE_LETTER: tileScore *= 2; break;
+                    case TRIPLE_LETTER: tileScore *= 3; break;
+                    case DOUBLE_WORD: doubleWordCount++; break;
+                    case TRIPLE_WORD: tripleWordCount++; break;
+                    default: break;
+                }
+            }
+            mainScore += tileScore;
         }
+    }
 
-        if (!word.empty() && !graph->isWordInDictionary(word)) {
-            allWordsValid = false;
+    if (mainWord.empty() || !graph->isWordInDictionary(mainWord)) allWordsValid = false;
+    else validWords.insert(mainWord);
+
+    mainScore *= std::pow(2, doubleWordCount) * std::pow(3, tripleWordCount);
+    total_score += mainScore;
+
+    for (auto& pos : tile_positions) {
+        int x = pos.first, y = pos.second;
+        std::string crossWord;
+        int crossScore = 0;
+        int crossDoubleWord = 0, crossTripleWord = 0;
+        if (vertical) {
+            int left = y, right = y;
+            while (left > 0 && Board[x][left - 1] != nullptr) left--;
+            while (right < 14 && Board[x][right + 1] != nullptr) right++;
+            if (left != right) {
+                for (int j = left; j <= right; ++j) {
+                    crossWord += Board[x][j]->letter;
+                    int tileScore = getTileScore(Board[x][j]->letter);
+                    if (j == y) {
+                        switch (board_bonus[x][j]) {
+                            case DOUBLE_LETTER: tileScore *= 2; break;
+                            case TRIPLE_LETTER: tileScore *= 3; break;
+                            case DOUBLE_WORD: crossDoubleWord++; break;
+                            case TRIPLE_WORD: crossTripleWord++; break;
+                            default: break;
+                        }
+                    }
+                    crossScore += tileScore;
+                }
+                if (!crossWord.empty() && graph->isWordInDictionary(crossWord)) {
+                    if (validWords.count(crossWord) == 0) {
+                        crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
+                        total_score += crossScore;
+                        validWords.insert(crossWord);
+                    }
+                } else {
+                    allWordsValid = false;
+                }
+            }
         } else {
-            validWords.push_back(word);  // Lưu từ hợp lệ
-            total_score += score;
-        }
-
-        // Kiểm tra từ dọc
-        for (auto& pos : tile_positions) {
-            int x = pos.first;
-            int y = pos.second;
-            word = Board[x][y]->letter;
-            score = calculateTileScore(x, y, Board[x][y]);
-            int up = x - 1;
-            int down = x + 1;
-
-            while (up >= 0 && Board[up][y] != nullptr) {
-                word = Board[up][y]->letter + word;
-                score += calculateTileScore(up, y, Board[up][y]);
-                up--;
-            }
-
-            while (down < 15 && Board[down][y] != nullptr) {
-                word += Board[down][y]->letter;
-                score += calculateTileScore(down, y, Board[down][y]);
-                down++;
-            }
-
-            if (!word.empty() && !graph->isWordInDictionary(word)) {
-                allWordsValid = false;
-                break;
-            } else {
-                validWords.push_back(word);  // Lưu từ hợp lệ
-                total_score += score;
+            int up = x, down = x;
+            while (up > 0 && Board[up - 1][y] != nullptr) up--;
+            while (down < 14 && Board[down + 1][y] != nullptr) down++;
+            if (up != down) {
+                for (int i = up; i <= down; ++i) {
+                    crossWord += Board[i][y]->letter;
+                    int tileScore = getTileScore(Board[i][y]->letter);
+                    if (i == x) {
+                        switch (board_bonus[i][y]) {
+                            case DOUBLE_LETTER: tileScore *= 2; break;
+                            case TRIPLE_LETTER: tileScore *= 3; break;
+                            case DOUBLE_WORD: crossDoubleWord++; break;
+                            case TRIPLE_WORD: crossTripleWord++; break;
+                            default: break;
+                        }
+                    }
+                    crossScore += tileScore;
+                }
+                if (!crossWord.empty() && graph->isWordInDictionary(crossWord)) {
+                    if (validWords.count(crossWord) == 0) {
+                        crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
+                        total_score += crossScore;
+                        validWords.insert(crossWord);
+                    }
+                } else {
+                    allWordsValid = false;
+                }
             }
         }
     }
 
-    // Tính điểm cho toàn bộ từ: Áp dụng bonus Double Word, Triple Word
-    for (auto& word : validWords) {
-        int wordScore = 0;
-        for (auto& c : word) {
-            wordScore += getTileScore(c);  // Tính điểm cho từ
-        }
+    if (tile_positions.size() == 7) total_score += 50;
 
-        // Kiểm tra các ô có Double Word hoặc Triple Word
-        int doubleWordCount = 0;
-        int tripleWordCount = 0;
-
-        // Kiểm tra các ô có Double Word hoặc Triple Word
-        for (auto& pos : tile_positions) {
-            int x = pos.first;
-            int y = pos.second;
-            BonusType bonus = board_bonus[x][y];
-
-            switch (bonus) {
-                case DOUBLE_WORD:
-                    doubleWordCount++;
-                    break;
-                case TRIPLE_WORD:
-                    tripleWordCount++;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // Áp dụng bonus từ Double Word, Triple Word
-        wordScore *= (1 << doubleWordCount) * (3 * tripleWordCount);
-        total_score += wordScore;
-    }
-
-    // Nếu là Bingo (7 tile), cộng thêm 50 điểm
-    if (tile_positions.size() == 7) {
-        total_score += 50;
-    }
-
-    return std::make_pair(allWordsValid, total_score);
+    return {allWordsValid, total_score};
 }
-
-
