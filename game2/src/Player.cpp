@@ -1,5 +1,4 @@
 #include "Player.hpp"
-#include "Tile.hpp"
 #include <SDL_image.h>
 #include "Game.hpp"
 #include<SDL2/SDL_ttf.h>
@@ -96,17 +95,8 @@ void Player::render(){
 
     SDL_RenderCopy(renderer, rack, &player2_dst_rect, &player2_rack_rect);
     SDL_RenderCopy(renderer, rack, &dst_rect, &rack_rect);
-    }
 }
 
-bool Player::isVertical(const vector<pair<int, int>>& tile_positions) {
-    int first_x = tile_positions[0].first;
-    for (const auto& pos : tile_positions) {
-        if (pos.first != first_x) {
-            return false; 
-        }
-    }
-    return true; 
 }
 
 int Player::calculateTileScore(int x, int y, Tile* tile) {
@@ -290,6 +280,7 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
         }
     }
 
+    // Bonus 50 điểm nếu đặt hết 7 chữ cái
     if (tile_positions.size() == 7) total_score += 50;
 
     return {allWordsValid, total_score};
