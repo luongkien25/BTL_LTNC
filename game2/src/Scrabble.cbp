@@ -71,12 +71,14 @@
 		<Unit filename="../include/Board.hpp" />
 		<Unit filename="../include/Game.hpp" />
 		<Unit filename="../include/Player.hpp" />
+		<Unit filename="../include/menu.hpp" />
 		<Unit filename="ARIAL.TTF" />
 		<Unit filename="Board.cpp" />
 		<Unit filename="Constants.cpp" />
 		<Unit filename="Game.cpp" />
 		<Unit filename="Player.cpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="menu.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

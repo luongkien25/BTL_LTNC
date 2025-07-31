@@ -10,7 +10,7 @@
 	"Game.hpp"
 	<SDL2/SDL_ttf.h>
 
-1753783985 source:c:\users\user\documents\game2\src\game.cpp
+1753925567 source:c:\users\user\documents\game2\src\game.cpp
 	"Game.hpp"
 	"Board.hpp"
 	"Player.hpp"
@@ -18,10 +18,11 @@
 	<tinyxml2.h>
 	<SDL2/SDL_ttf.h>
 
-1753347735 c:\users\user\documents\game2\include\game.hpp
+1753924869 c:\users\user\documents\game2\include\game.hpp
 	<SDL2/SDL.h>
 	<Board.hpp>
 	"Player.hpp"
+	"menu.hpp"
 
 1750591975 c:\users\user\onedrive\desktop\sdl2-devel-2.30.11-mingw\sdl2-2.30.11\x86_64-w64-mingw32\include\sdl2\sdl.h
 	"SDL_main.h"
@@ -961,7 +962,7 @@
 	<cstddef>
 	<cstdarg>
 
-1753783503 c:\users\user\documents\game2\include\player.hpp
+1753789109 c:\users\user\documents\game2\include\player.hpp
 	<iostream>
 	<SDL2/SDL.h>
 	<string>
@@ -972,4 +973,14 @@
 	"SDL.h"
 	"begin_code.h"
 	"close_code.h"
+
+1753924543 source:c:\users\user\documents\game2\src\menu.cpp
+	"menu.hpp"
+
+1753924528 c:\users\user\documents\game2\include\menu.hpp
+	<iostream>
+	<SDL2/SDL.h>
+	<SDL_image.h>
+	<vector>
+	<SDL2/SDL_ttf.h>
 
