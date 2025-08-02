@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include <SDL_image.h>
 #include "Game.hpp"
+#include "Tile.hpp"
 #include<SDL2/SDL_ttf.h>
 #include <set>
 #include<cmath>
@@ -99,6 +100,16 @@ void Player::render(){
 
 }
 
+bool Player::isVertical(const vector<pair<int, int>>& tile_positions) {
+    int first_x = tile_positions[0].first;
+    for (const auto& pos : tile_positions) {
+        if (pos.first != first_x) {
+            return false; 
+        }
+    }
+    return true; 
+}
+
 int Player::calculateTileScore(int x, int y, Tile* tile) {
     int tileScore = tile -> score;
     BonusType bonus = board_bonus[x][y];
@@ -134,12 +145,13 @@ int Player::getTileScore(char c) {
     }
 }
 
+
 std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vector<pair<int, int>> tile_positions) {
     bool hasAdjacentTile = false;
     Graph* graph = Graph::getInstance();
     int total_score = 0;
     bool allWordsValid = true;
-    std::set<std::string> validWords; 
+    std::set<std::string> validWords; // Dùng set để tránh trùng từ
 
     for (auto& pos : tile_positions) {
         int x = pos.first;
@@ -160,13 +172,18 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
     int doubleWordCount = 0, tripleWordCount = 0;
     std::set<std::pair<int, int>> newTiles(tile_positions.begin(), tile_positions.end());
 
-    if (vertical) {
+    if (!vertical) {
         int y = tile_positions[0].second;
         int minX = 15, maxX = -1;
         for (auto& pos : tile_positions) {
             minX = std::min(minX, pos.first);
             maxX = std::max(maxX, pos.first);
         }
+        for (int x = minX; x <= maxX; ++x) {
+        if (Board[x][y] == nullptr) {
+            return {false, 0}; 
+        }
+    }
         int x = minX;
         while (x > 0 && Board[x - 1][y] != nullptr) x--;
         for (; x < 15 && Board[x][y] != nullptr; ++x) {
@@ -190,6 +207,11 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
             minY = std::min(minY, pos.second);
             maxY = std::max(maxY, pos.second);
         }
+        for (int y = minY; y <= maxY; ++y) {
+        if (Board[x][y] == nullptr) {
+            return {false, 0}; 
+        }
+    }
         int y = minY;
         while (y > 0 && Board[x][y - 1] != nullptr) y--;
         for (; y < 15 && Board[x][y] != nullptr; ++y) {
@@ -208,7 +230,9 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
         }
     }
 
-    if (mainWord.empty() || !graph->isWordInDictionary(mainWord)) allWordsValid = false;
+    if (mainWord.empty() || !graph->isWordInDictionary(mainWord)) {
+        allWordsValid = false;
+    }
     else validWords.insert(mainWord);
 
     mainScore *= std::pow(2, doubleWordCount) * std::pow(3, tripleWordCount);
@@ -219,7 +243,7 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
         std::string crossWord;
         int crossScore = 0;
         int crossDoubleWord = 0, crossTripleWord = 0;
-        if (vertical) {
+        if (!vertical) {
             int left = y, right = y;
             while (left > 0 && Board[x][left - 1] != nullptr) left--;
             while (right < 14 && Board[x][right + 1] != nullptr) right++;
@@ -238,14 +262,17 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
                     }
                     crossScore += tileScore;
                 }
-                if (!crossWord.empty() && graph->isWordInDictionary(crossWord)) {
-                    if (validWords.count(crossWord) == 0) {
-                        crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
-                        total_score += crossScore;
-                        validWords.insert(crossWord);
+
+                if (crossWord.length() >= 2) {
+                    if (graph->isWordInDictionary(crossWord)) {
+                        if (validWords.count(crossWord) == 0) {
+                            crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
+                            total_score += crossScore;
+                            validWords.insert(crossWord);
+                        }
+                    } else {
+                         allWordsValid = false;
                     }
-                } else {
-                    allWordsValid = false;
                 }
             }
         } else {
@@ -266,22 +293,23 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
                         }
                     }
                     crossScore += tileScore;
+
                 }
-                if (!crossWord.empty() && graph->isWordInDictionary(crossWord)) {
-                    if (validWords.count(crossWord) == 0) {
-                        crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
-                        total_score += crossScore;
-                        validWords.insert(crossWord);
+                if (crossWord.length() >= 2) {
+                    if (graph->isWordInDictionary(crossWord)) {
+                        if (validWords.count(crossWord) == 0) {
+                            crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
+                            total_score += crossScore;
+                            validWords.insert(crossWord);
+                        }
+                    } else {
+                        allWordsValid = false;
                     }
-                } else {
-                    allWordsValid = false;
                 }
             }
         }
     }
 
-    // Bonus 50 điểm nếu đặt hết 7 chữ cái
     if (tile_positions.size() == 7) total_score += 50;
-
     return {allWordsValid, total_score};
 }

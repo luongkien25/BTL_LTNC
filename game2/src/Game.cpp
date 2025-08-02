@@ -81,6 +81,11 @@ void Game::handleEvents() {
                     if (tile.selected) {
                         tile.rect.x = mousePoint.x;
                         tile.rect.y = mousePoint.y;
+                        int x_index = (mousePoint.x - board->board_rect.x) / 40;
+                        int y_index = (mousePoint.y - board->board_rect.y) / 40;
+
+                        board->update_board_with_tile(&tile, x_index, y_index);
+                        player->tile_positions.push_back({x_index, y_index});
                         tile.selected = false;
                         break;
                     }
@@ -94,6 +99,11 @@ void Game::handleEvents() {
                     if (tile.selected) {
                         tile.rect.x = mousePoint.x;
                         tile.rect.y = mousePoint.y;
+                        int x_index = (mousePoint.x - board->board_rect.x) / 40;
+                        int y_index = (mousePoint.y - board->board_rect.y) / 40;
+                        
+                        board->update_board_with_tile(&tile, x_index, y_index);
+                        //player2 -> tile.position.....
                         tile.selected = false;
                         break;
                     }
