@@ -10,7 +10,7 @@
 #include <Game.hpp>
 using namespace std;
 using namespace tinyxml2;
-
+BonusType board_bonus[15][15];
 Board::Board(SDL_Renderer* renderer) : renderer(renderer) {
     // Optional: initialization logic here
 }
