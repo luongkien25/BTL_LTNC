@@ -23,6 +23,7 @@ public:
     void render(int& screenW,int& screenH);
     void load_bonus_from_txt(const std::string& path);
     void update_board_with_tile(Tile* tile, int x, int y);
+    Tile* boardTile[15][15] = {{nullptr}};
     SDL_Rect board_rect;
 private:
     SDL_Renderer* renderer;
@@ -36,7 +37,6 @@ private:
     int board_size_x = 520;
     int board_size_y = 480;
     vector<int> tileIDs;
-    Tile* board[15][15] = {{nullptr}};
 };
 
 

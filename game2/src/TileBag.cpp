@@ -106,6 +106,7 @@ int TileBag::getLetterCount(char letter) const {
             count++;
         }
     }
+    
     return count;
 }
 
