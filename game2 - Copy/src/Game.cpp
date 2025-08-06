@@ -29,6 +29,7 @@ bool Game::init(const char* title, int width, int height) {
 
 void Game::run() {
     player->generate_letters();
+    current_time = SDL_GetTicks();
     while (isRunning) {
         handleEvents();
         update();
@@ -54,6 +55,7 @@ void Game::handleEvents() {
         if (e.type == SDL_QUIT) isRunning = false;
         else if(e.type == SDL_MOUSEBUTTONDOWN){
              menu->handleEvent(e,mouseX,mouseY);
+             player->handleEvent(e,mouseX,mouseY);
              int x = mouseX;
              int y = mouseY;
              SDL_Point mousePoint = {x, y};
@@ -126,6 +128,8 @@ void Game::update() {
             player->tile_positions.clear();
         }
     }
+
+    player->handle_timer(current_time);
 }
 
 void Game::render() {

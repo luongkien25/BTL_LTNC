@@ -1475,14 +1475,14 @@
 	"begin_code.h"
 	"close_code.h"
 
-1754374255 c:\users\user\documents\game2 - copy\include\game.hpp
+1754461036 c:\users\user\documents\game2 - copy\include\game.hpp
 	<SDL2/SDL.h>
 	<Board.hpp>
 	"Player.hpp"
 	"menu.hpp"
 	"UI.hpp"
 
-1754293035 c:\users\user\documents\game2 - copy\include\player.hpp
+1754468241 c:\users\user\documents\game2 - copy\include\player.hpp
 	"Graph.hpp"
 	"Tile.hpp"
 	"Board.hpp"
@@ -1492,6 +1492,8 @@
 	<vector>
 	<utility>
 	<SDL2/SDL_ttf.h>
+	<iomanip>
+	<sstream>
 
 1736156157 c:\users\user\documents\game2 - copy\include\sdl2\sdl_ttf.h
 	"SDL.h"
@@ -1507,7 +1509,7 @@
 
 1752901390 source:c:\users\user\documents\game2 - copy\src\constants.cpp
 
-1754380268 source:c:\users\user\documents\game2 - copy\src\game.cpp
+1754461064 source:c:\users\user\documents\game2 - copy\src\game.cpp
 	"Game.hpp"
 	"Board.hpp"
 	"Player.hpp"
@@ -1526,14 +1528,16 @@
 1753924543 source:c:\users\user\documents\game2 - copy\src\menu.cpp
 	"menu.hpp"
 
-1754380192 source:c:\users\user\documents\game2 - copy\src\player.cpp
+1754468231 source:c:\users\user\documents\game2 - copy\src\player.cpp
 	"Player.hpp"
 	<SDL_image.h>
 	"Game.hpp"
 	"Tile.hpp"
+	"UI.hpp"
 	<SDL2/SDL_ttf.h>
 	<set>
 	<cmath>
+	<string>
 
 1754291604 c:\users\user\documents\game2 - copy\include\tile.hpp
 	<SDL2/SDL.h>
@@ -1552,7 +1556,7 @@
 	<array>
 	<vector>
 
-1754374805 c:\users\user\documents\game2 - copy\include\ui.hpp
+1754451302 c:\users\user\documents\game2 - copy\include\ui.hpp
 	<iostream>
 	<SDL2/SDL.h>
 	<SDL_image.h>

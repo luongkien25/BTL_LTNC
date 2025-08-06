@@ -8,6 +8,7 @@ class UI{
   public:
      void render_buttons(string path,SDL_Rect dstRect);
      UI(SDL_Renderer* renderer);
+     SDL_Rect submitRect = {540,750,76,43};
   private:
     SDL_Renderer* renderer;
 };

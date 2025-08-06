@@ -2,9 +2,11 @@
 #include <SDL_image.h>
 #include "Game.hpp"
 #include "Tile.hpp"
+#include "UI.hpp"
 #include<SDL2/SDL_ttf.h>
 #include <set>
 #include<cmath>
+#include<string>
 using namespace std;
 
 Player::Player(SDL_Renderer* renderer) : renderer(renderer) {
@@ -50,34 +52,81 @@ void Player::renderText(int x,int y,TTF_Font* font,string text){
     SDL_DestroyTexture(texture);
 }
 
+void Player::handle_timer(Uint32& current_timer){
+
+   if(is_first_player_turn){
+    Uint32 player1_turn_start = SDL_GetTicks();
+    player1_time_left =  time_per_match-(player1_turn_start-current_timer);
+    if(player1_turn_start-current_timer>time_per_match) player1_time_left = 0;
+    }
+    else{
+        Uint32 player2_turn_start = SDL_GetTicks();
+
+        player2_time_left =  time_per_match-(player2_turn_start);
+     if(player2_turn_start-current_timer>time_per_match) player2_time_left = 0;
+    }
+}
+
+string Player::formatTimeMMSS(Uint32 ms) {
+    Uint32 total_seconds = ms / 1000;
+    Uint32 minutes = total_seconds / 60;
+    Uint32 seconds = total_seconds % 60;
+
+    std::ostringstream oss;
+    oss << std::setw(2) << std::setfill('0') << minutes
+        << ":" << std::setw(2) << std::setfill('0') << seconds;
+   return oss.str();
+}
+
 void Player::render(){
-    //render frame
-    SDL_Surface* frame_surface = IMG_Load("frame.png");
+    //render player 1 frame
+    SDL_Surface* frame_surface = nullptr;
+    if(is_first_player_turn){
+
+        frame_surface = IMG_Load("frame.png");
+    }
+    else frame_surface = IMG_Load("gray_frame.png");
+
     SDL_Texture* frame_texture = SDL_CreateTextureFromSurface(renderer,frame_surface);
     SDL_Rect frame_rect = {15,210,370,420};
     SDL_RenderCopy(renderer,frame_texture,nullptr,&frame_rect);
     SDL_FreeSurface(frame_surface);
     SDL_DestroyTexture(frame_texture);
-
+    string player1_timer;
+    if(player1_time_left>0)
+     player1_timer = "Time: "+formatTimeMMSS(player1_time_left);
+    else  player1_timer = "Time Over!";
     //render text
     TTF_Font* font = TTF_OpenFont("ARIAL.TTF",24);
     renderText(160,250,font,"Player 1");
     renderText(70,400,font,"Score:");
-    renderText(70,430,font,"Time:");
-
+    renderText(70,430,font,player1_timer);
+    SDL_Surface* player2_frame_surface = nullptr;
     //render player 2 frame
-    SDL_Surface* player2_frame_surface = IMG_Load("frame.png");
+    if(!is_first_player_turn)
+       player2_frame_surface = IMG_Load("frame.png");
+    else  player2_frame_surface = IMG_Load("gray_frame.png");
+
+
+    if (!player2_frame_surface) {
+        std::cerr << "Failed to load frame: " << IMG_GetError() << std::endl;
+        // Optionally return or handle error here
+    }
+
     SDL_Texture* player2_frame_texture = SDL_CreateTextureFromSurface(renderer,player2_frame_surface);
     SDL_Rect player2_frame_rect = {1050,210,370,420};
     SDL_RenderCopy(renderer,player2_frame_texture,nullptr,&player2_frame_rect);
     SDL_FreeSurface(player2_frame_surface);
     SDL_DestroyTexture(player2_frame_texture);
 
+    string timer;
+    if(player2_time_left>0)
+    timer = "Time: " + formatTimeMMSS(player2_time_left);
+    else  timer = "Time Over!";
     //render player 2 text
     renderText(1200,250,font,"Player 2");
     renderText(1105,400,font,"Score:");
-    renderText(1105,430,font,"Time:");
-
+    renderText(1105,430,font,timer);
 
     //render player's rack
     for (int i = 0; i < letters_size; i++) {
@@ -312,4 +361,14 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
 
     if (tile_positions.size() == 7) total_score += 50;
     return {allWordsValid, total_score};
+}
+
+void Player::handleEvent(SDL_Event& event,int& mouseX,int& mouseY){
+    UI ui(Player::renderer);
+    SDL_Point mousePoint = {mouseX,mouseY};
+    if(SDL_PointInRect(&mousePoint,&ui.submitRect)){
+           if(!is_first_player_turn)
+           is_first_player_turn = true;
+           else is_first_player_turn = false;
+        }
 }

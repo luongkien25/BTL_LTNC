@@ -10,11 +10,15 @@
 #include<SDL2/SDL_ttf.h>
 
 using namespace std;
-
+#include <iomanip>
+#include <sstream>
 class Player{
 
  public:
      Player(SDL_Renderer* renderer);
+     string formatTimeMMSS(Uint32 ms);
+     void handle_timer(Uint32& current_time);
+     void handleEvent(SDL_Event& event,int& mouseX,int& mouseY);
      void load_player_rack(const string& path);
      void generate_letters();
      void rack_update();
@@ -34,8 +38,11 @@ class Player{
  private:
      SDL_Renderer* renderer;
      SDL_Texture* rack;
-
+     bool is_first_player_turn = false;
      int letters_size = 7;
      int tile_size = 40;
      int score = 0;
+     Uint32 player1_time_left;
+     Uint32 player2_time_left;
+     Uint32 time_per_match = 20000;
 };
