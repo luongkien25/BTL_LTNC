@@ -9,6 +9,7 @@ using namespace std;
 bool Game::init(const char* title, int width, int height) {
     TTF_Init();
     board = new Board(renderer);
+    board->load_bonus_from_txt("standard-board.txt");
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) return false;
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_FULLSCREEN_DESKTOP);
