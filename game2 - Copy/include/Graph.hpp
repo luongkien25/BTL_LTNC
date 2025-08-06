@@ -16,21 +16,21 @@ struct Node {
 
 class Graph {
 private:
-    Node* root;
-    static Graph* instance;
+    Node* root;  
+    static Graph* instance;  
 
-    Graph();
+    Graph(); 
 
 public:
-    static Graph* getInstance();
+    static Graph* getInstance(); 
 
-    ~Graph();
+    ~Graph();  
 
-    void insertWord(const string& word);
-    bool isWordInDictionary(const string& word);
+    void insertWord(const string& word);  
+    bool isWordInDictionary(const string& word); 
 };
 
 
 void loadDictionary(const string& fileName, Graph& gDictionary);
 
-#endif
+#endif  
