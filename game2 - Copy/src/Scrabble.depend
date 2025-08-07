@@ -1528,7 +1528,7 @@
 1753924543 source:c:\users\user\documents\game2 - copy\src\menu.cpp
 	"menu.hpp"
 
-1754539864 source:c:\users\user\documents\game2 - copy\src\player.cpp
+1754540205 source:c:\users\user\documents\game2 - copy\src\player.cpp
 	"Player.hpp"
 	<SDL_image.h>
 	"Game.hpp"
@@ -1564,4 +1564,21 @@
 
 1754374827 source:c:\users\user\documents\game2 - copy\src\ui.cpp
 	<UI.hpp>
+
+1754549654 source:c:\users\user\documents\game2 - copy\src\sound.cpp
+	"sound.hpp"
+
+1754549633 c:\users\user\documents\game2 - copy\include\sound.hpp
+	<SDL.h>
+	<SDL_mixer.h>
+	<iostream>
+
+1754548741 c:\users\user\documents\game2 - copy\include\sdl2\sdl_mixer.h
+	"SDL_stdinc.h"
+	"SDL_rwops.h"
+	"SDL_audio.h"
+	"SDL_endian.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
 
