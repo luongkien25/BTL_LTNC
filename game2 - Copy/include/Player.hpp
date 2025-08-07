@@ -35,13 +35,16 @@ class Player{
      std::vector<std::pair<int, int>> tile_positions;
      SDL_Rect rack_rect;
      SDL_Rect dst_rect;
+     bool is_first_player_turn = false;
+     int score = 0,player1_score = 0,player2_score =0 ;
+     string player1_score_text = "Score: ",player2_score_text = "Score: ";
  private:
      SDL_Renderer* renderer;
      SDL_Texture* rack;
-     bool is_first_player_turn = false;
+
      int letters_size = 7;
      int tile_size = 40;
-     int score = 0;
+
      Uint32 player1_time_left;
      Uint32 player2_time_left;
      Uint32 time_per_match = 20000;

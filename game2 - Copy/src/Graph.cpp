@@ -1,7 +1,7 @@
 #include "Graph.hpp"
 #include <iostream>
 #include <fstream>
-#include <cctype>  
+#include <cctype>
 
 Graph* Graph::instance = nullptr;
 
@@ -11,7 +11,7 @@ Node::Node() {
 
 Node::~Node() {
     for (auto c : nodeCon) {
-        delete c; 
+        delete c;
     }
 }
 
@@ -25,34 +25,34 @@ Graph::~Graph() {
 
 Graph* Graph::getInstance() {
     if (instance == nullptr) {
-        instance = new Graph();  
+        instance = new Graph();
     }
-    return instance;  
+    return instance;
 }
 
 void Graph::insertWord(const string& word) {
     Node* current = root;
     for (auto c : word) {
-        int viTri = c - 'a'; 
+        int viTri = c - 'a';
         if (current->nodeCon[viTri] == nullptr) {
-            current->nodeCon[viTri] = new Node();  
+            current->nodeCon[viTri] = new Node();
         }
         current = current->nodeCon[viTri];
     }
-    current->end = true;  
+    current->end = true;
 }
 
 bool Graph::isWordInDictionary(const string& word) {
     Node* current = root;
     for (auto c : word) {
         c = tolower(c);
-        int viTri = c - 'a';  
+        int viTri = c - 'a';
         if (current->nodeCon[viTri] == nullptr) {
-            return false; 
+            return false;
         }
-        current = current->nodeCon[viTri]; 
+        current = current->nodeCon[viTri];
     }
-    return current->end; 
+    return current->end;
 }
 
 void loadDictionary(const string& fileName, Graph& gDictionary) {
@@ -63,6 +63,6 @@ void loadDictionary(const string& fileName, Graph& gDictionary) {
     }
     string word;
     while (getline(file, word)) {
-        gDictionary.insertWord(word);  
+        gDictionary.insertWord(word);
     }
 }

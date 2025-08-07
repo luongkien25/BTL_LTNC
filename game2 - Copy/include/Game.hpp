@@ -14,7 +14,6 @@ public:
     int screenW, screenH;
     Uint32 current_time = SDL_GetTicks();
 
-
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;

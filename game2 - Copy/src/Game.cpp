@@ -9,8 +9,7 @@ using namespace std;
 bool Game::init(const char* title, int width, int height) {
     TTF_Init();
     board = new Board(renderer);
-    board->load_bonus_from_txt("standard-board.txt");
-
+     board->load_bonus_from_txt("standard-board.txt");
     if (SDL_Init(SDL_INIT_VIDEO) < 0) return false;
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_FULLSCREEN_DESKTOP);
     if (!window) return false;
@@ -61,6 +60,7 @@ void Game::handleEvents() {
              int y = mouseY;
              SDL_Point mousePoint = {x, y};
              bool check_tile = false;
+             if(player->is_first_player_turn)// in first playerer turn , you can only choose tile from his rack
              for(auto& tile: player->letters){
                  if(SDL_PointInRect(&mousePoint, &tile.rect)){
                      tile.selected = true;
@@ -68,15 +68,18 @@ void Game::handleEvents() {
                      break;
                  }
              }
-
              bool player2_check_tile = false;
-             for(auto& tile: player->player2_letters){
+             if(!player->is_first_player_turn){//// in second playerer turn , you can only choose tile from his rack
+
+                for(auto& tile: player->player2_letters){
                  if(SDL_PointInRect(&mousePoint, &tile.rect)){
                      tile.selected = true;
                      player2_check_tile = true;
                      break;
                  }
              }
+             }
+
 
               if (!check_tile && SDL_PointInRect(&mousePoint, &board->board_rect)) {
                  mousePoint.x = ((mousePoint.x-board->board_rect.x)/40)*40+(board->board_rect.x);
@@ -120,10 +123,16 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
+
     auto [allWordValids, score] = player->canSubmitAndCalculateScore(board->boardTile, player->tile_positions);//check valid words
     if((player->tile_positions).size() == 2) {
         if (allWordValids) {
-            SDL_Log("All words are valid. Total score: %d", score);
+            if(player->is_first_player_turn){
+                player->player1_score = score;
+            }
+            else{
+
+            }
         } else {
             SDL_Log("Invalid words, please try again.");
             player->tile_positions.clear();

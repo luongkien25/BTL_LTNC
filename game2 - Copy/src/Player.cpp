@@ -21,8 +21,6 @@ void Player::load_player_rack(const string& path){
 
 };
 
-
-
 void Player::generate_letters(){
    for(int i=0;i<letters_size;i++){
       Tile tile;
@@ -79,11 +77,12 @@ string Player::formatTimeMMSS(Uint32 ms) {
 }
 
 void Player::render(){
+
     //render player 1 frame
     SDL_Surface* frame_surface = nullptr;
     if(is_first_player_turn){
-
-        frame_surface = IMG_Load("frame.png");
+           player1_score_text = "Score: " + to_string(player1_score);
+           frame_surface = IMG_Load("frame.png");
     }
     else frame_surface = IMG_Load("gray_frame.png");
 
@@ -92,19 +91,25 @@ void Player::render(){
     SDL_RenderCopy(renderer,frame_texture,nullptr,&frame_rect);
     SDL_FreeSurface(frame_surface);
     SDL_DestroyTexture(frame_texture);
-    string player1_timer;
+
+     string player1_timer;
     if(player1_time_left>0)
      player1_timer = "Time: "+formatTimeMMSS(player1_time_left);
     else  player1_timer = "Time Over!";
     //render text
     TTF_Font* font = TTF_OpenFont("ARIAL.TTF",24);
     renderText(160,250,font,"Player 1");
-    renderText(70,400,font,"Score:");
+    renderText(70,400,font,player1_score_text);
     renderText(70,430,font,player1_timer);
     SDL_Surface* player2_frame_surface = nullptr;
+
     //render player 2 frame
-    if(!is_first_player_turn)
-       player2_frame_surface = IMG_Load("frame.png");
+
+    if(!is_first_player_turn){
+        player2_frame_surface = IMG_Load("frame.png");
+        player2_score_text = "Score: " + to_string(player2_score);
+    }
+
     else  player2_frame_surface = IMG_Load("gray_frame.png");
 
 
@@ -125,7 +130,7 @@ void Player::render(){
     else  timer = "Time Over!";
     //render player 2 text
     renderText(1200,250,font,"Player 2");
-    renderText(1105,400,font,"Score:");
+    renderText(1105,400,font,player2_score_text);
     renderText(1105,430,font,timer);
 
     //render player's rack
