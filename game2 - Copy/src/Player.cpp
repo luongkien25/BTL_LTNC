@@ -50,20 +50,17 @@ void Player::renderText(int x,int y,TTF_Font* font,string text){
     SDL_DestroyTexture(texture);
 }
 
-void Player::handle_timer(Uint32& current_timer){
-
-   if(is_first_player_turn){
-    Uint32 player1_turn_start = SDL_GetTicks();
-    player1_time_left =  time_per_match-(player1_turn_start-current_timer);
-    if(player1_turn_start-current_timer>time_per_match) player1_time_left = 0;
-    }
-    else{
-        Uint32 player2_turn_start = SDL_GetTicks();
-
-        player2_time_left =  time_per_match-(player2_turn_start);
-     if(player2_turn_start-current_timer>time_per_match) player2_time_left = 0;
+void Player::handle_timer(Uint32& current_time){
+    Uint32 now = SDL_GetTicks();
+    if(is_first_player_turn){
+        Uint32 elapsed = now - player1_turn_start;
+        player1_time_left = (elapsed >= time_per_match) ? 0 : time_per_match - elapsed;
+    } else {
+        Uint32 elapsed = now - player2_turn_start;
+        player2_time_left = (elapsed >= time_per_match) ? 0 : time_per_match - elapsed;
     }
 }
+
 
 string Player::formatTimeMMSS(Uint32 ms) {
     Uint32 total_seconds = ms / 1000;
@@ -155,6 +152,9 @@ void Player::render(){
 }
 
 bool Player::isVertical(const vector<pair<int, int>>& tile_positions) {
+    if(tile_positions.size() == 1) {
+        return true; 
+    }
     int first_x = tile_positions[0].first;
     for (const auto& pos : tile_positions) {
         if (pos.first != first_x) {
@@ -283,11 +283,12 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
             mainScore += tileScore;
         }
     }
-
-    if (mainWord.empty() || !graph->isWordInDictionary(mainWord)) {
-        allWordsValid = false;
+    if(mainWord.length() >= 2) {    
+        if (mainWord.empty() || !graph->isWordInDictionary(mainWord)) {
+            allWordsValid = false;
+        } else validWords.insert(mainWord);
     }
-    else validWords.insert(mainWord);
+    
 
     mainScore *= std::pow(2, doubleWordCount) * std::pow(3, tripleWordCount);
     total_score += mainScore;
@@ -368,12 +369,7 @@ std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vec
     return {allWordsValid, total_score};
 }
 
-void Player::handleEvent(SDL_Event& event,int& mouseX,int& mouseY){
-    UI ui(Player::renderer);
-    SDL_Point mousePoint = {mouseX,mouseY};
-    if(SDL_PointInRect(&mousePoint,&ui.submitRect)){
-           if(!is_first_player_turn)
-           is_first_player_turn = true;
-           else is_first_player_turn = false;
-        }
+void Player::update_score_texts() {
+    player1_score_text = "Score: " + to_string(player1_score);
+    player2_score_text = "Score: " + to_string(player2_score);
 }

@@ -29,14 +29,23 @@ bool Game::init(const char* title, int width, int height) {
 
 void Game::run() {
     player->generate_letters();
-    current_time = SDL_GetTicks();
+
+    // ✅ Bắt đầu lượt 1: đánh dấu thời gian bắt đầu
+    Uint32 start_tick = SDL_GetTicks();
+    player->set_player1_turn_start(start_tick);  // rất quan trọng
+
     while (isRunning) {
         handleEvents();
+
+        Uint32 now = SDL_GetTicks();              // ✅ cập nhật mỗi frame
+        player->handle_timer(now);                // ✅ truyền thời gian hiện tại thực tế
+
         update();
         render();
         SDL_Delay(16);
     }
 }
+
 
 void Game::cleanup() {
 
@@ -55,7 +64,6 @@ void Game::handleEvents() {
         if (e.type == SDL_QUIT) isRunning = false;
         else if(e.type == SDL_MOUSEBUTTONDOWN){
              menu->handleEvent(e,mouseX,mouseY);
-             player->handleEvent(e,mouseX,mouseY);
              int x = mouseX;
              int y = mouseY;
              SDL_Point mousePoint = {x, y};
@@ -92,7 +100,7 @@ void Game::handleEvents() {
                         int y_index = (mousePoint.y - board->board_rect.y) / 40;
 
                         board->update_board_with_tile(&tile, x_index, y_index);
-                        player->tile_positions.push_back({x_index, y_index});
+                        if(player->is_first_player_turn) {player->tile_positions.push_back({x_index, y_index});}
                         tile.selected = false;
                         break;
                     }
@@ -110,9 +118,47 @@ void Game::handleEvents() {
                         int y_index = (mousePoint.y - board->board_rect.y) / 40;
 
                         board->update_board_with_tile(&tile, x_index, y_index);
-                        //player2 -> tile.position.....
+                        if(!player->is_first_player_turn){player->tile_positions2.push_back({x_index, y_index});}
                         tile.selected = false;
                         break;
+                    }
+                }
+            }
+            if (SDL_PointInRect(&mousePoint, &submitButton)) {
+                bool allWordsValid;
+                int totalScore;
+
+                if (player->is_first_player_turn) {
+                    std::tie(allWordsValid, totalScore) = player->canSubmitAndCalculateScore(board->boardTile, player->tile_positions);
+                    for (const auto& pos : player->tile_positions) {
+                    SDL_Log(" - (%d, %d)", pos.first, pos.second);
+                    }
+                    if (allWordsValid) {
+                        player->player1_score += totalScore;
+                        player->update_score_texts();
+                        SDL_Log("Player 1 scored %d points", totalScore);
+                        player->is_first_player_turn = false; 
+                        player->tile_positions.clear();
+                        player->set_player2_turn_start(SDL_GetTicks()); 
+                    } else {
+                        SDL_Log("Invalid move by Player 1.");
+                        player->tile_positions.clear();
+                    }
+                } else {
+                    std::tie(allWordsValid, totalScore) = player->canSubmitAndCalculateScore(board->boardTile, player->tile_positions2);
+                    for (const auto& pos : player->tile_positions2) {
+                    SDL_Log(" - (%d, %d)", pos.first, pos.second);
+                    }
+                    if (allWordsValid) {
+                        player->player2_score += totalScore;
+                        player->update_score_texts();
+                        SDL_Log("Player 2 scored %d points", totalScore);
+                        player->is_first_player_turn = true;
+                        player->tile_positions2.clear();
+                        player->set_player1_turn_start(SDL_GetTicks()); 
+                    } else {
+                        SDL_Log("Invalid move by Player 2.");
+                        player->tile_positions2.clear();
                     }
                 }
             }
@@ -123,23 +169,23 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
+    
+    Uint32 now = SDL_GetTicks();
+    player->handle_timer(now);
 
-    auto [allWordValids, score] = player->canSubmitAndCalculateScore(board->boardTile, player->tile_positions);//check valid words
-    if((player->tile_positions).size() == 2) {
-        if (allWordValids) {
-            if(player->is_first_player_turn){
-                player->player1_score = score;
-            }
-            else{
-
-            }
-        } else {
-            SDL_Log("Invalid words, please try again.");
-            player->tile_positions.clear();
-        }
+    if (player->is_first_player_turn && player->get_player1_time_left() == 0) {
+        SDL_Log("Player 1 het gio tu dong doi luot.");
+        player->tile_positions.clear();
+        player->is_first_player_turn = false;
+        player->set_player2_turn_start(SDL_GetTicks());
     }
 
-    player->handle_timer(current_time);
+    if (!player->is_first_player_turn && player->get_player2_time_left() == 0) {
+        SDL_Log("Player 2 het gio tu dong doi luot.");
+        player->tile_positions2.clear();
+        player->is_first_player_turn = true;
+        player->set_player1_turn_start(SDL_GetTicks());
+    }
 }
 
 void Game::render() {
@@ -173,3 +219,5 @@ void Game::render() {
 
     SDL_RenderPresent(renderer);
 }
+
+

@@ -13,6 +13,8 @@ public:
     void cleanup();
     int screenW, screenH;
     Uint32 current_time = SDL_GetTicks();
+    SDL_Rect submitButton = {540, 750, 76, 43};
+
 
 private:
     SDL_Window* window = nullptr;
