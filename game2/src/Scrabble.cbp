@@ -17,6 +17,7 @@
 					<Add directory="../include/SDL2" />
 					<Add directory="C:/Users/User/Documents/game2/lib" />
 					<Add directory="C:/Users/User/Documents/game2/external/tinyxml2-master/tinyxml2-master" />
+					<Add directory="C:/Users/User/Documents/game2 - Copy/include" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="C:/Users/User/Documents/game2/external/tinyxml2-master/tinyxml2-master" />
@@ -29,6 +30,8 @@
 					<Add library="C:/Users/User/Documents/game2/external/tinyxml2-master/tinyxml2-master/tinyxml2.cpp" />
 					<Add library="SDL2_ttf" />
 					<Add library="libSDL2_ttf.a" />
+					<Add library="SDL2_mixer.a" />
+					<Add library="C:/Users/User/Documents/game2 - Copy/include/SDL2/SDL_mixer.h" />
 					<Add directory="C:/Users/User/Documents/game2/src/" />
 					<Add directory="C:/Users/User/Documents/game2/external/tinyxml2-master/tinyxml2-master" />
 					<Add directory="C:/Users/User/Documents/game2/lib" />
@@ -70,15 +73,22 @@
 		<Unit filename="../external/tinyxml2-master/tinyxml2-master/tinyxml2.cpp" />
 		<Unit filename="../include/Board.hpp" />
 		<Unit filename="../include/Game.hpp" />
+		<Unit filename="../include/Graph.hpp" />
 		<Unit filename="../include/Player.hpp" />
+		<Unit filename="../include/Tile.hpp" />
+		<Unit filename="../include/UI.hpp" />
 		<Unit filename="../include/menu.hpp" />
+		<Unit filename="../include/sound.hpp" />
 		<Unit filename="ARIAL.TTF" />
 		<Unit filename="Board.cpp" />
 		<Unit filename="Constants.cpp" />
 		<Unit filename="Game.cpp" />
+		<Unit filename="Graph.cpp" />
 		<Unit filename="Player.cpp" />
+		<Unit filename="UI.cpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="menu.cpp" />
+		<Unit filename="sound.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

@@ -3,8 +3,9 @@
 #include "Game.hpp"
 
 int main(int argc, char* argv[]) {
+
     Graph* gDictionary = Graph::getInstance();
-    loadDictionary("EnglishDictionary.txt", *gDictionary);
+    loadDictionary("EnglishDictionary.txt",*gDictionary);
     Game game;
     if (!game.init("Scrabble", 800, 800)) return -1;
     game.run();
