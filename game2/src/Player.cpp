@@ -177,6 +177,7 @@ void Player::renderText(int x, int y, TTF_Font* font, string text) {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_Rect dstRect = {x, y, surface->w, surface->h};
     SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
+    
     SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
 }
@@ -326,94 +327,197 @@ int Player::getTileScore(char c) {
     return tileBag->getTileScore(c);
 }
 
+
 std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vector<pair<int, int>> tile_positions) {
-    SDL_Log("=== canSubmitAndCalculateScore DEBUG ===");
-    SDL_Log("Input tile_positions size: %zu", tile_positions.size());
-    
-    if (tile_positions.empty()) {
-        SDL_Log("No tile positions provided");
-        return {false, 0};
-    }
-    
-    bool hasAdjacentTile = false;
     Graph* graph = Graph::getInstance();
     int total_score = 0;
     bool allWordsValid = true;
-    std::set<std::string> validWords;
+    std::set<std::string> validWords; // Dùng set để tránh trùng từ
+    std::set<std::pair<int, int>> newTiles(tile_positions.begin(), tile_positions.end());
 
+    bool touchesExisting = false;
     for (auto& pos : tile_positions) {
         int x = pos.first;
         int y = pos.second;
-        SDL_Log("Checking position (%d, %d)", x, y);
-        
-        if (Board[x][y] == nullptr) {
-            SDL_Log("ERROR: No tile at position (%d, %d)", x, y);
-            return {false, 0};
-        }
-        
-        SDL_Log("Tile at (%d, %d): %c", x, y, Board[x][y]->letter);
-        
-        if ((x > 0 && Board[x - 1][y] != nullptr) ||
-            (x < 14 && Board[x + 1][y] != nullptr) ||
-            (y > 0 && Board[x][y - 1] != nullptr) ||
-            (y < 14 && Board[x][y + 1] != nullptr)) {
-            hasAdjacentTile = true;
-            SDL_Log("Found adjacent tile at (%d, %d)", x, y);
+        const int dx[4] = {-1, 1, 0, 0};
+        const int dy[4] = {0, 0, -1, 1};
+        for (int k = 0; k < 4; ++k) {
+            int nx = x + dx[k], ny = y + dy[k];
+            if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15) {
+                // phải là ô cũ (không nằm trong newTiles)
+                if (Board[nx][ny] != nullptr && newTiles.count({nx, ny}) == 0) {
+                    touchesExisting = true;
+                    break;
+                }
+            }
         }
     }
-    
-    SDL_Log("hasAdjacentTile: %s", hasAdjacentTile ? "true" : "false");
-    
-    // Đặc biệt cho lượt đầu tiên - kiểm tra center tile
+
     bool isFirstMove = true;
     for (int i = 0; i < 15 && isFirstMove; i++) {
         for (int j = 0; j < 15 && isFirstMove; j++) {
-            if (Board[i][j] != nullptr) {
-                bool isNewTile = false;
-                for (const auto& pos : tile_positions) {
-                    if (pos.first == i && pos.second == j) {
-                        isNewTile = true;
-                        break;
-                    }
-                }
-                if (!isNewTile) {
-                    isFirstMove = false;
-                }
+            if (Board[i][j] != nullptr && newTiles.count({i, j}) == 0) {
+                isFirstMove = false; // tìm thấy ô cũ (không phải ô mới đặt)
             }
         }
     }
-    
-    SDL_Log("isFirstMove: %s", isFirstMove ? "true" : "false");
-    
+
     if (isFirstMove) {
-        bool hasCenterTile = false;
-        for (const auto& pos : tile_positions) {
-            if (pos.first == 7 && pos.second == 7) {
-                hasCenterTile = true;
-                break;
-            }
+        if (newTiles.count({7,7}) == 0) {
+            return {false, 0}; 
         }
-        if (!hasCenterTile) {
-            SDL_Log("First move must include center tile (7,7)");
+    } else {
+        if (!touchesExisting) return {false, 0}; // lượt sau phải chạm ô cũ
+    }
+
+    bool vertical = isVertical(tile_positions);
+
+    std::string mainWord;
+    int mainScore = 0;
+    int doubleWordCount = 0, tripleWordCount = 0;
+
+
+    if (!vertical) {
+        int y = tile_positions[0].second;
+        int minX = 15, maxX = -1;
+        for (auto& pos : tile_positions) {
+            minX = std::min(minX, pos.first);
+            maxX = std::max(maxX, pos.first);
+        }
+        for (int x = minX; x <= maxX; ++x) {
+        if (Board[x][y] == nullptr) {
             return {false, 0};
         }
-    } else if (!hasAdjacentTile) {
-        SDL_Log("Non-first move must have adjacent tiles");
-        return {false, 0};
     }
-    
-    SDL_Log("Basic validation passed, calculating score...");
-    
-    // Tính điểm đơn giản
-    for (const auto& pos : tile_positions) {
-        if (Board[pos.first][pos.second] != nullptr) {
-            total_score += Board[pos.first][pos.second]->score;
+        int x = minX;
+        while (x > 0 && Board[x - 1][y] != nullptr) x--;
+        for (; x < 15 && Board[x][y] != nullptr; ++x) {
+            mainWord += Board[x][y]->letter;
+            int tileScore = getTileScore(Board[x][y]->letter);
+            if (newTiles.count({x, y})) {
+                switch (board_bonus[x][y]) {
+                    case DOUBLE_LETTER: tileScore *= 2; break;
+                    case TRIPLE_LETTER: tileScore *= 3; break;
+                    case DOUBLE_WORD: doubleWordCount++; break;
+                    case TRIPLE_WORD: tripleWordCount++; break;
+                    default: break;
+                }
+            }
+            mainScore += tileScore;
+        }
+    } else {
+        int x = tile_positions[0].first;
+        int minY = 15, maxY = -1;
+        for (auto& pos : tile_positions) {
+            minY = std::min(minY, pos.second);
+            maxY = std::max(maxY, pos.second);
+        }
+        for (int y = minY; y <= maxY; ++y) {
+        if (Board[x][y] == nullptr) {
+            return {false, 0};
         }
     }
+        int y = minY;
+        while (y > 0 && Board[x][y - 1] != nullptr) y--;
+        for (; y < 15 && Board[x][y] != nullptr; ++y) {
+            mainWord += Board[x][y]->letter;
+            int tileScore = getTileScore(Board[x][y]->letter);
+            if (newTiles.count({x, y})) {
+                switch (board_bonus[x][y]) {
+                    case DOUBLE_LETTER: tileScore *= 2; break;
+                    case TRIPLE_LETTER: tileScore *= 3; break;
+                    case DOUBLE_WORD: doubleWordCount++; break;
+                    case TRIPLE_WORD: tripleWordCount++; break;
+                    default: break;
+                }
+            }
+            mainScore += tileScore;
+        }
+    }
+    if(mainWord.length() >= 2) {    
+        if (mainWord.empty() || !graph->isWordInDictionary(mainWord)) {
+            allWordsValid = false;
+        } else validWords.insert(mainWord);
+    }
     
-    SDL_Log("Total score calculated: %d", total_score);
-    
-    return {true, total_score};
+
+    mainScore *= std::pow(2, doubleWordCount) * std::pow(3, tripleWordCount);
+    total_score += mainScore;
+
+    for (auto& pos : tile_positions) {
+        int x = pos.first, y = pos.second;
+        std::string crossWord;
+        int crossScore = 0;
+        int crossDoubleWord = 0, crossTripleWord = 0;
+        if (!vertical) {
+            int left = y, right = y;
+            while (left > 0 && Board[x][left - 1] != nullptr) left--;
+            while (right < 14 && Board[x][right + 1] != nullptr) right++;
+            if (left != right) {
+                for (int j = left; j <= right; ++j) {
+                    crossWord += Board[x][j]->letter;
+                    int tileScore = getTileScore(Board[x][j]->letter);
+                    if (j == y) {
+                        switch (board_bonus[x][j]) {
+                            case DOUBLE_LETTER: tileScore *= 2; break;
+                            case TRIPLE_LETTER: tileScore *= 3; break;
+                            case DOUBLE_WORD: crossDoubleWord++; break;
+                            case TRIPLE_WORD: crossTripleWord++; break;
+                            default: break;
+                        }
+                    }
+                    crossScore += tileScore;
+                }
+
+                if (crossWord.length() >= 2) {
+                    if (graph->isWordInDictionary(crossWord)) {
+                        if (validWords.count(crossWord) == 0) {
+                            crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
+                            total_score += crossScore;
+                            validWords.insert(crossWord);
+                        }
+                    } else {
+                         allWordsValid = false;
+                    }
+                }
+            }
+        } else {
+            int up = x, down = x;
+            while (up > 0 && Board[up - 1][y] != nullptr) up--;
+            while (down < 14 && Board[down + 1][y] != nullptr) down++;
+            if (up != down) {
+                for (int i = up; i <= down; ++i) {
+                    crossWord += Board[i][y]->letter;
+                    int tileScore = getTileScore(Board[i][y]->letter);
+                    if (i == x) {
+                        switch (board_bonus[i][y]) {
+                            case DOUBLE_LETTER: tileScore *= 2; break;
+                            case TRIPLE_LETTER: tileScore *= 3; break;
+                            case DOUBLE_WORD: crossDoubleWord++; break;
+                            case TRIPLE_WORD: crossTripleWord++; break;
+                            default: break;
+                        }
+                    }
+                    crossScore += tileScore;
+
+                }
+                if (crossWord.length() >= 2) {
+                    if (graph->isWordInDictionary(crossWord)) {
+                        if (validWords.count(crossWord) == 0) {
+                            crossScore *= std::pow(2, crossDoubleWord) * std::pow(3, crossTripleWord);
+                            total_score += crossScore;
+                            validWords.insert(crossWord);
+                        }
+                    } else {
+                        allWordsValid = false;
+                    }
+                }
+            }
+        }
+    }
+
+    if (tile_positions.size() == 7) total_score += 50;
+    return {allWordsValid, total_score};
 }
 
 void Player::handleEvent(SDL_Event& event, int& mouseX, int& mouseY) {
