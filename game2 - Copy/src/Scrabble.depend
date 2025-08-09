@@ -1008,7 +1008,7 @@
 	<android/log.h>
 	<assert.h>
 
-1754380439 source:c:\users\user\documents\game2 - copy\src\board.cpp
+1754702977 source:c:\users\user\documents\game2 - copy\src\board.cpp
 	<iostream>
 	<fstream>
 	<SDL2/SDL.h>
@@ -1020,7 +1020,7 @@
 	<sstream>
 	<Game.hpp>
 
-1754378678 c:\users\user\documents\game2 - copy\include\board.hpp
+1754702806 c:\users\user\documents\game2 - copy\include\board.hpp
 	<iostream>
 	"Tile.hpp"
 	<SDL.h>
@@ -1475,17 +1475,18 @@
 	"begin_code.h"
 	"close_code.h"
 
-1754461036 c:\users\user\documents\game2 - copy\include\game.hpp
+1754707893 c:\users\user\documents\game2 - copy\include\game.hpp
 	<SDL2/SDL.h>
 	<Board.hpp>
 	"Player.hpp"
 	"menu.hpp"
 	"UI.hpp"
 
-1754537009 c:\users\user\documents\game2 - copy\include\player.hpp
+1754702851 c:\users\user\documents\game2 - copy\include\player.hpp
 	"Graph.hpp"
 	"Tile.hpp"
 	"Board.hpp"
+	"TileBag.hpp"
 	<iostream>
 	<SDL2/SDL.h>
 	<string>
@@ -1509,7 +1510,8 @@
 
 1752901390 source:c:\users\user\documents\game2 - copy\src\constants.cpp
 
-1754539052 source:c:\users\user\documents\game2 - copy\src\game.cpp
+1754708270 source:c:\users\user\documents\game2 - copy\src\game.cpp
+	<ctime>
 	"Game.hpp"
 	"Board.hpp"
 	"Player.hpp"
@@ -1521,14 +1523,15 @@
 1752905736 c:\users\user\documents\game2 - copy\src\board.hpp
 	<SDL.h>
 
-1754294257 source:c:\users\user\documents\game2 - copy\src\main.cpp
+1754704016 source:c:\users\user\documents\game2 - copy\src\main.cpp
 	<SDL2/SDL.h>
 	"Game.hpp"
 
-1753924543 source:c:\users\user\documents\game2 - copy\src\menu.cpp
+1754706726 source:c:\users\user\documents\game2 - copy\src\menu.cpp
+	"Game.hpp"
 	"menu.hpp"
 
-1754540205 source:c:\users\user\documents\game2 - copy\src\player.cpp
+1754703150 source:c:\users\user\documents\game2 - copy\src\player.cpp
 	"Player.hpp"
 	<SDL_image.h>
 	"Game.hpp"
@@ -1539,34 +1542,37 @@
 	<cmath>
 	<string>
 
-1754291604 c:\users\user\documents\game2 - copy\include\tile.hpp
+1754702867 c:\users\user\documents\game2 - copy\include\tile.hpp
 	<SDL2/SDL.h>
 	<string>
 
 1754291684 source:c:\users\user\documents\game2 - copy\src\tile.cpp
 	<iostream>
 
-1754533788 source:c:\users\user\documents\game2 - copy\src\graph.cpp
+1754703117 source:c:\users\user\documents\game2 - copy\src\graph.cpp
 	"Graph.hpp"
 	<iostream>
 	<fstream>
 	<cctype>
 
-1754533784 c:\users\user\documents\game2 - copy\include\graph.hpp
+1754702842 c:\users\user\documents\game2 - copy\include\graph.hpp
 	<string>
 	<array>
 	<vector>
 
-1754451302 c:\users\user\documents\game2 - copy\include\ui.hpp
+1754707301 c:\users\user\documents\game2 - copy\include\ui.hpp
 	<iostream>
 	<SDL2/SDL.h>
 	<SDL_image.h>
+	<SDL_ttf.h>
+	<vector>
 
-1754374827 source:c:\users\user\documents\game2 - copy\src\ui.cpp
+1754707240 source:c:\users\user\documents\game2 - copy\src\ui.cpp
 	<UI.hpp>
+	<cstdlib>
+	<algorithm>
 
-1754549654 source:c:\users\user\documents\game2 - copy\src\sound.cpp
-	"sound.hpp"
+1754553078 source:c:\users\user\documents\game2 - copy\src\sound.cpp
 
 1754549633 c:\users\user\documents\game2 - copy\include\sound.hpp
 	<SDL.h>
@@ -1581,4 +1587,15 @@
 	"SDL_version.h"
 	"begin_code.h"
 	"close_code.h"
+
+1754702933 c:\users\user\documents\game2 - copy\include\tilebag.hpp
+	<vector>
+	<random>
+	<algorithm>
+	"Tile.hpp"
+
+1754708393 source:c:\users\user\documents\game2 - copy\src\tilebag.cpp
+	"TileBag.hpp"
+	<iostream>
+	<chrono>
 

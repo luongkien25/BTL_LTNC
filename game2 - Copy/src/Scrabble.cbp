@@ -76,6 +76,7 @@
 		<Unit filename="../include/Graph.hpp" />
 		<Unit filename="../include/Player.hpp" />
 		<Unit filename="../include/Tile.hpp" />
+		<Unit filename="../include/TileBag.hpp" />
 		<Unit filename="../include/UI.hpp" />
 		<Unit filename="../include/menu.hpp" />
 		<Unit filename="../include/sound.hpp" />
@@ -85,6 +86,7 @@
 		<Unit filename="Game.cpp" />
 		<Unit filename="Graph.cpp" />
 		<Unit filename="Player.cpp" />
+		<Unit filename="TileBag.cpp" />
 		<Unit filename="UI.cpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="menu.cpp" />
