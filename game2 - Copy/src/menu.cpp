@@ -1,7 +1,8 @@
-
+#include "Game.hpp"
 #include "menu.hpp"
 
 using namespace std;
+Game* game;
 Menu::Menu(SDL_Renderer* renderer) : renderer(renderer) {
     // Optional: initialization logic here
 }
@@ -29,6 +30,7 @@ void Menu::handleEvent(SDL_Event& event,int& mouseX,int& mouseY){
          for(auto& opt: Option){
                 if(SDL_PointInRect(&mousePoint,&opt.dstRect)){
                     opt.selected = true;
+
                 }
 
             }

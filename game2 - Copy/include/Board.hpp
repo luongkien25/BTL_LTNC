@@ -7,6 +7,7 @@
 #include "tinyxml2.h"
 using namespace std;
 using namespace tinyxml2;
+
 enum BonusType {
     NONE,
     DOUBLE_LETTER,
@@ -19,12 +20,17 @@ extern BonusType board_bonus[15][15];
 class Board {
 public:
     Board(SDL_Renderer* renderer);
-    void  load(const string& tmxFile,SDL_Renderer* renderer);
-    void render(int& screenW,int& screenH);
+    ~Board();
+    void load(const string& tmxFile, SDL_Renderer* renderer);
+    void render(int& screenW, int& screenH, SDL_Texture* rackTexture = nullptr);
+    void renderWithSelection(int& screenW, int& screenH, SDL_Texture* rackTexture,
+                           bool hasSelection, int selectedX, int selectedY);
     void load_bonus_from_txt(const std::string& path);
     void update_board_with_tile(Tile* tile, int x, int y);
+
     Tile* boardTile[15][15] = {{nullptr}};
     SDL_Rect board_rect;
+
 private:
     SDL_Renderer* renderer;
     SDL_Texture* tileset = nullptr;
@@ -38,5 +44,3 @@ private:
     int board_size_y = 600;
     vector<int> tileIDs;
 };
-
-

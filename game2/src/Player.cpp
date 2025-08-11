@@ -327,7 +327,7 @@ int Player::getTileScore(char c) {
     return tileBag->getTileScore(c);
 }
 
-// Thay thế method canSubmitAndCalculateScore trong Player.cpp
+
 
 std::pair<bool, int> Player::canSubmitAndCalculateScore(Tile* Board[15][15], vector<pair<int, int>> tile_positions) {
     SDL_Log("=== COMPLETE SCRABBLE VALIDATION ===");
@@ -897,4 +897,3 @@ Player::~Player() {
         rack = nullptr;
     }
 }
-

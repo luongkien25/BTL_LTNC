@@ -13,9 +13,8 @@ public:
     void cleanup();
     int screenW, screenH;
     Uint32 current_time = SDL_GetTicks();
-    SDL_Rect submitButton = {540, 750, 76, 43};
-
-
+    bool is_showing_menu = false;
+    bool is_showing_win_effect = false;
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -25,6 +24,7 @@ private:
     UI* ui = nullptr;
     int game_state = 0;
     bool isRunning = true;
+    bool is_clicked_submit = false;
 
     void handleEvents();
 

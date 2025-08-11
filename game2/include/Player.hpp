@@ -6,15 +6,16 @@
 #include "HintSystem.hpp"  // ======== THÊM INCLUDE =======
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+
+#include <iostream>
 #include <string>
 #include <vector>
 #include <utility>
-#include <SDL2/SDL_ttf.h>
 #include <iomanip>
 #include <sstream>
 #include <set>
 #include <algorithm>
-
 using namespace std;
 
 struct WordInfo {
