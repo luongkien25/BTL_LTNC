@@ -1,4 +1,4 @@
-// Game.cpp - Fixed version with tile recall and proper rack positioning
+// Game.cpp - Updated version with complete HintSystem integration
 
 #include "Game.hpp"
 #include "Board.hpp"
@@ -67,17 +67,123 @@ void Game::handleEvents() {
             SDL_Point mousePoint = {x, y};
             bool check_tile = false;
             bool board_tile_selected = false;
-            
-            // ============= FIX: LOGIC MỚI CHO RECALL TILE =============
-            // Kiểm tra click vào TỪNG TILE TRỐNG trong rack thay vì toàn bộ rack area
             bool recalledTile = false;
             
+            // ======== XỬ LÝ HINT BUTTON - SỬ DỤNG HINTSYSTEM MỚI ========
+            SDL_Rect hintRect = {710, 750, 76, 43};
+            if (SDL_PointInRect(&mousePoint, &hintRect)) {
+                SDL_Log("=== HINT BUTTON CLICKED - USING NEW HINTSYSTEM ===");
+                
+                // Lấy rack của player hiện tại
+                vector<Tile>* currentRack = player->is_first_player_turn ? 
+                    &player->letters : &player->player2_letters;
+                
+                // Chuyển đổi rack thành vector<Tile> để truyền vào HintSystem
+                vector<Tile> rackTiles;
+                for (const auto& tile : *currentRack) {
+                    if (tile.letter != '\0') {
+                        rackTiles.push_back(tile);
+                    }
+                }
+                
+                SDL_Log("Current player rack size: %zu tiles", rackTiles.size());
+                for (const auto& tile : rackTiles) {
+                    SDL_Log("Rack tile: %c (score: %d)", tile.letter, tile.score);
+                }
+                
+                // Gọi HintSystem để tạo hints
+                player->showHint(board->boardTile); // Sử dụng method có sẵn trong Player
+                
+                return; // Return early để tránh xử lý các sự kiện khác
+            }
+            
+            // ======== XỬ LÝ CLICK VÀO HINT PANEL - CẢI THIỆN ========
+            if (player->showingHints) {
+                SDL_Rect hintPanel = {50, 100, 350, 250}; // Tăng kích thước panel
+                if (SDL_PointInRect(&mousePoint, &hintPanel)) {
+                    // Tính toán hint nào được click - CẢI THIỆN LOGIC
+                    int titleHeight = 40;
+                    int hintStartY = 100 + titleHeight;
+                    int clickY = mouseY - hintStartY;
+                    int hintIndex = clickY / 30; // Mỗi hint cao 30px
+                    
+                    if (hintIndex >= 0 && hintIndex < player->currentHints.size()) {
+                        SDL_Log("=== APPLYING HINT %d ===", hintIndex + 1);
+                        const HintMove& selectedHint = player->currentHints[hintIndex];
+                        
+                        SDL_Log("Selected hint: '%s' at (%d,%d) %s with score %d", 
+                                selectedHint.word.c_str(), selectedHint.startX, selectedHint.startY,
+                                selectedHint.isHorizontal ? "Horizontal" : "Vertical", selectedHint.score);
+                        
+                        // ======== TỰ ĐỘNG ĐẶT TILES THEO HINT - CẢI THIỆN ========
+                        vector<Tile>* currentRack = player->is_first_player_turn ? 
+                            &player->letters : &player->player2_letters;
+                        
+                        // Clear current tile positions
+                        player->tile_positions.clear();
+                        
+                        // Đặt từng tile theo hint
+                        bool allTilesPlaced = true;
+                        
+                        for (size_t i = 0; i < selectedHint.tilesUsed.size(); i++) {
+                            char neededLetter = selectedHint.tilesUsed[i];
+                            pair<int, int> position = selectedHint.positions[i];
+                            
+                            // Tìm tile trong rack
+                            bool tileFound = false;
+                            for (auto& rackTile : *currentRack) {
+                                if (rackTile.letter == neededLetter && !rackTile.selected) {
+                                    // Đặt tile trên board
+                                    rackTile.rect.x = board->board_rect.x + position.first * 40;
+                                    rackTile.rect.y = board->board_rect.y + position.second * 40;
+                                    
+                                    board->update_board_with_tile(&rackTile, position.first, position.second);
+                                    player->tile_positions.push_back(position);
+                                    
+                                    // Clear tile từ rack
+                                    rackTile.letter = '\0';
+                                    rackTile.selected = false;
+                                    
+                                    SDL_Log("Placed tile '%c' at (%d,%d)", 
+                                            neededLetter, position.first, position.second);
+                                    
+                                    tileFound = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!tileFound) {
+                                SDL_Log("ERROR: Could not find tile '%c' in rack", neededLetter);
+                                allTilesPlaced = false;
+                                break;
+                            }
+                        }
+                        
+                        if (allTilesPlaced) {
+                            // Reposition rack tiles
+                            player->repositionRackTiles();
+                            
+                            SDL_Log("Successfully applied hint: '%s' with %zu tiles", 
+                                    selectedHint.word.c_str(), selectedHint.tilesUsed.size());
+                        } else {
+                            SDL_Log("Failed to apply hint completely");
+                        }
+                        
+                        // Clear hints sau khi sử dụng
+                        player->clearHints();
+                    }
+                    return;
+                } else {
+                    // Click outside hint panel -> clear hints
+                    player->clearHints();
+                }
+            }
+            
+            // ============= LOGIC RECALL TILE (giữ nguyên như cũ) =============
             if (player->has_selected_board_tile) {
-                // Player 1 - kiểm tra click vào tile trống trong rack
                 if (player->is_first_player_turn) {
                     for (auto& rackTile : player->letters) {
                         if (rackTile.letter == '\0' && SDL_PointInRect(&mousePoint, &rackTile.rect)) {
-                            // Recall tile về vị trí trống này
                             int board_x = player->selected_board_tile_x;
                             int board_y = player->selected_board_tile_y;
                             
@@ -107,7 +213,6 @@ void Game::handleEvents() {
                         }
                     }
                 } else {
-                    // Player 2 - kiểm tra click vào tile trống trong rack
                     for (auto& rackTile : player->player2_letters) {
                         if (rackTile.letter == '\0' && SDL_PointInRect(&mousePoint, &rackTile.rect)) {
                             int board_x = player->selected_board_tile_x;
@@ -140,14 +245,12 @@ void Game::handleEvents() {
                     }
                 }
                 
-                // Reset selection nếu đã recall thành công
                 if (recalledTile) {
                     player->has_selected_board_tile = false;
                 }
             }
             
-            // ============= LOGIC CHỌN TILE TRÊN BOARD =============
-            // Xử lý việc chọn tile trên board để di chuyển (chỉ khi không recall)
+            // ============= LOGIC CHỌN TILE TRÊN BOARD (giữ nguyên) =============
             if (!recalledTile && SDL_PointInRect(&mousePoint, &board->board_rect)) {
                 int board_x = (mousePoint.x - board->board_rect.x) / 40;
                 int board_y = (mousePoint.y - board->board_rect.y) / 40;
@@ -167,7 +270,6 @@ void Game::handleEvents() {
                         if (isTileFromCurrentTurn) {
                             SDL_Log("Selected board tile at (%d, %d): %c", board_x, board_y, clickedBoardTile->letter);
                             
-                            // Deselect tất cả tile trong rack
                             for (auto& tile : player->letters) {
                                 tile.selected = false;
                             }
@@ -186,8 +288,7 @@ void Game::handleEvents() {
                 }
             }
             
-            // ============= LOGIC CHỌN TILE TRONG RACK =============
-            // Handle player tile selection - CHỈ XỬ LÝ KHI KHÔNG CÓ BOARD TILE SELECTED VÀ KHÔNG RECALL
+            // ============= LOGIC CHỌN TILE TRONG RACK (giữ nguyên) =============
             if (!board_tile_selected && !recalledTile && player->is_first_player_turn) {
                 for (auto& tile : player->letters) {
                     if (tile.letter != '\0' && SDL_PointInRect(&mousePoint, &tile.rect)) {
@@ -219,8 +320,7 @@ void Game::handleEvents() {
                 }
             }
 
-            // ============= LOGIC ĐẶT/DI CHUYỂN TILE LÊN BOARD =============
-            // Handle placing/moving tiles on board (chỉ khi không recall)
+            // ============= LOGIC ĐẶT/DI CHUYỂN TILE LÊN BOARD (giữ nguyên) =============
             if (!check_tile && !player2_check_tile && !board_tile_selected && !recalledTile &&
                 SDL_PointInRect(&mousePoint, &board->board_rect)) {
                 
@@ -283,7 +383,6 @@ void Game::handleEvents() {
                                 
                                 SDL_Log("Placed P1 tile '%c' at (%d,%d)", tile.letter, new_x, new_y);
                                 
-                                // ĐỂ TRỐNG VỊ TRÍ TRONG RACK (để có thể recall về)
                                 tile.letter = '\0';
                             }
                             break;
@@ -305,7 +404,6 @@ void Game::handleEvents() {
                                 
                                 SDL_Log("Placed P2 tile '%c' at (%d,%d)", tile.letter, new_x, new_y);
                                 
-                                // ĐỂ TRỐNG VỊ TRÍ TRONG RACK (để có thể recall về)
                                 tile.letter = '\0';
                             }
                             break;
@@ -314,7 +412,7 @@ void Game::handleEvents() {
                 }
             }
 
-            // ============= SUBMIT BUTTON =============
+            // ============= SUBMIT BUTTON (giữ nguyên) =============
             SDL_Rect submitRect = {540, 750, 76, 43};
             if (SDL_PointInRect(&mousePoint, &submitRect)) {
                 SDL_Log("=== SUBMIT DEBUG ===");
@@ -350,6 +448,7 @@ void Game::handleEvents() {
                         SDL_Log("Turn switched to: %s", player->is_first_player_turn ? "Player 1" : "Player 2");
                         
                         player->tile_positions.clear();
+                        player->clearHints(); // Clear hints after successful move
                         SDL_Log("Tile positions cleared");
                         
                         current_time = SDL_GetTicks();
@@ -370,7 +469,7 @@ void Game::handleEvents() {
                 }
             }
 
-            // ============= EXCHANGE BUTTON =============
+            // ============= EXCHANGE BUTTON (cải thiện) =============
             SDL_Rect exchangeRect = {625, 750, 76, 43};
             if (SDL_PointInRect(&mousePoint, &exchangeRect)) {
                 if (player->is_first_player_turn) {
@@ -383,6 +482,7 @@ void Game::handleEvents() {
                     if (!tilesToExchange.empty()) {
                         player->exchangeTiles(1, tilesToExchange);
                         player->is_first_player_turn = false;
+                        player->clearHints(); // Clear hints after exchange
                         SDL_Log("Player 1 exchanged %zu tiles", tilesToExchange.size());
                     }
                 } else {
@@ -395,6 +495,7 @@ void Game::handleEvents() {
                     if (!tilesToExchange.empty()) {
                         player->exchangeTiles(2, tilesToExchange);
                         player->is_first_player_turn = true;
+                        player->clearHints(); // Clear hints after exchange
                         SDL_Log("Player 2 exchanged %zu tiles", tilesToExchange.size());
                     }
                 }
@@ -429,15 +530,37 @@ void Game::render() {
             break;
             
         case 1:
-            board->render(screenH, screenW, player->getRackTexture());
+            // Render board với selection
+            board->renderWithSelection(screenH, screenW, player->getRackTexture(), 
+                                     player->has_selected_board_tile, 
+                                     player->selected_board_tile_x, 
+                                     player->selected_board_tile_y);
+            
+            // Render player info
             player->render();
             
+            // Render UI buttons với highlight cho hint button
             ui->render_buttons("submit_button.png", {540, 750, 76, 43});
             ui->render_buttons("exchange_word.png", {625, 750, 76, 43});
+            
+            // Highlight hint button nếu đang show hints
+            if (player->showingHints) {
+                // Vẽ glow effect cho hint button
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 100);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_Rect glowRect = {708, 748, 80, 47};
+                SDL_RenderFillRect(renderer, &glowRect);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+            }
+            
             ui->render_buttons("hint_button.png", {710, 750, 76, 43});
             ui->render_buttons("resign.png", {795, 750, 76, 43});
             ui->render_buttons("home.png", {1200, 20, 64, 64});
             
+            // ======== RENDER HINTS PANEL - CẢI THIỆN ========
+            player->renderHints();
+            
+            // Render turn indicator
             TTF_Font* font = TTF_OpenFont("ARIAL.TTF", 20);
             if (font) {
                 string turnText = player->is_first_player_turn ? "Player 1's Turn" : "Player 2's Turn";
@@ -452,6 +575,61 @@ void Game::render() {
                 }
                 TTF_CloseFont(font);
             }
+            
+            // ======== RENDER HINT USAGE STATISTICS ========
+            if (player->showingHints && !player->currentHints.empty()) {
+                TTF_Font* statsFont = TTF_OpenFont("ARIAL.TTF", 14);
+                if (statsFont) {
+                    SDL_Color cyan = {0, 255, 255};
+                    
+                    // Tính toán thống kê hints
+                    int totalScore = 0;
+                    int maxScore = 0;
+                    for (const auto& hint : player->currentHints) {
+                        totalScore += hint.score;
+                        maxScore = max(maxScore, hint.score);
+                    }
+                    int avgScore = totalScore / player->currentHints.size();
+                    
+                    string statsText = "Hints: " + to_string(player->currentHints.size()) + 
+                                     " | Best: " + to_string(maxScore) + 
+                                     " | Avg: " + to_string(avgScore);
+                    
+                    SDL_Surface* statsSurface = TTF_RenderText_Blended(statsFont, statsText.c_str(), cyan);
+                    if (statsSurface) {
+                        SDL_Texture* statsTexture = SDL_CreateTextureFromSurface(renderer, statsSurface);
+                        SDL_Rect statsRect = {410, 100, statsSurface->w, statsSurface->h};
+                        SDL_RenderCopy(renderer, statsTexture, nullptr, &statsRect);
+                        SDL_FreeSurface(statsSurface);
+                        SDL_DestroyTexture(statsTexture);
+                    }
+                    TTF_CloseFont(statsFont);
+                }
+            }
+            
+            // ======== RENDER HINT INSTRUCTIONS - CẢI THIỆN ========
+            if (player->showingHints && !player->currentHints.empty()) {
+                TTF_Font* instructionFont = TTF_OpenFont("ARIAL.TTF", 16);
+                if (instructionFont) {
+                    SDL_Color yellow = {255, 255, 0};
+                    SDL_Surface* instructionSurface = TTF_RenderText_Blended(
+                        instructionFont, "Click on a hint to automatically place tiles on board", yellow);
+                    if (instructionSurface) {
+                        SDL_Texture* instructionTexture = SDL_CreateTextureFromSurface(renderer, instructionSurface);
+                        SDL_Rect instructionRect = {
+                            screenW/2 - instructionSurface->w/2, 
+                            screenH - 50, 
+                            instructionSurface->w, 
+                            instructionSurface->h
+                        };
+                        SDL_RenderCopy(renderer, instructionTexture, nullptr, &instructionRect);
+                        SDL_FreeSurface(instructionSurface);
+                        SDL_DestroyTexture(instructionTexture);
+                    }
+                    TTF_CloseFont(instructionFont);
+                }
+            }
+            
             break;
     }
 
