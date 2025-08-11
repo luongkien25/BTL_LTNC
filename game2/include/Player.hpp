@@ -3,7 +3,8 @@
 #include "Tile.hpp"
 #include "Board.hpp"
 #include "TileBag.hpp"
-
+#include "HintSystem.hpp"  // ======== THÊM INCLUDE =======
+#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -13,8 +14,19 @@
 #include <utility>
 #include <iomanip>
 #include <sstream>
-
+#include <set>
+#include <algorithm>
 using namespace std;
+
+struct WordInfo {
+    string word;
+    int score;
+    vector<pair<int, int>> positions;
+    bool isHorizontal;
+    
+    WordInfo() : score(0), isHorizontal(true) {}
+};
+
 class Player{
 public:
     Player(SDL_Renderer* renderer);
@@ -27,9 +39,7 @@ public:
     void generate_letters();
     void refillRack(int playerNum);
     void exchangeTiles(int playerNum, const std::vector<int>& tileIndices);
-    
-    // ============= FIX 2: THÊM METHOD MỚI =============
-    void repositionRackTiles(); // Method để sắp xếp lại vị trí tile trong rack
+    void repositionRackTiles();
     
     void rack_update();
     void render();
@@ -39,7 +49,26 @@ public:
     bool isVertical(const vector<pair<int, int>>& tile_positions);
     int calculateTileScore(int x, int y, Tile* tile);
     int getTileScore(char c);
+    
+    // ===== MAIN VALIDATION METHOD =====
     std::pair<bool, int> canSubmitAndCalculateScore(Tile* Board[15][15], vector<pair<int, int>> tile_positions);
+    
+    // ===== HELPER VALIDATION METHODS =====
+    bool areNewTilesStraight(Tile* Board[15][15], const vector<pair<int, int>>& tile_positions);
+    bool isFirstMoveOnBoard(Tile* Board[15][15], const vector<pair<int, int>>& tile_positions);
+    bool hasAdjacentConnection(Tile* Board[15][15], const vector<pair<int, int>>& tile_positions);
+    bool isNewTile(int x, int y, const vector<pair<int, int>>& tile_positions);
+    
+    // ===== WORD FINDING METHODS =====
+    vector<WordInfo> findAllWordsFormed(Tile* Board[15][15], const vector<pair<int, int>>& tile_positions);
+    WordInfo findMainWord(Tile* Board[15][15], const vector<pair<int, int>>& tile_positions);
+    WordInfo findCrossWord(Tile* Board[15][15], int x, int y, bool vertical, const vector<pair<int, int>>& tile_positions);
+    bool areNewTilesHorizontal(const vector<pair<int, int>>& tile_positions);
+    
+    // ======== HINT SYSTEM METHODS ========
+    void showHint(Tile* Board[15][15]);
+    void renderHints();
+    void clearHints();
     
     // Getter cho tile bag
     TileBag* getTileBag() { return tileBag; }
@@ -59,6 +88,11 @@ public:
     int selected_board_tile_x = -1;
     int selected_board_tile_y = -1;
     
+    // ======== HINT SYSTEM VARIABLES ========
+    vector<HintMove> currentHints;
+    bool showingHints = false;
+    int selectedHintIndex = -1;
+    
     ~Player();
     SDL_Texture* getRackTexture() { return rack; }
 
@@ -66,6 +100,7 @@ private:
     SDL_Renderer* renderer;
     SDL_Texture* rack;
     TileBag* tileBag;
+    HintSystem* hintSystem;  // ======== THÊM HINT SYSTEM ========
 
     int letters_size = 7;
     int tile_size = 40;
